@@ -1,46 +1,28 @@
-require("dotenv").config();
-const express = require("express");
-const bodyParser = require("body-parser");
-const axios = require("axios");
+import dotenv from "dotenv";
+import express from "express";
+import bodyParser from "body-parser";
+import axios from "axios";
+import { Client } from "@notionhq/client";
+import { parseAndRoute } from "./parseAndRoute.js";
+import { setContext } from "./context.js";
+
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const { Client } = require("@notionhq/client");
-
-const notion = new Client({ auth: process.env.NOTION_TOKEN });
-const TELEGRAM_API = `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}`;
+export const notion = new Client({ auth: process.env.NOTION_TOKEN });
+export const TELEGRAM_API = `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}`;
+export const databaseId = process.env.NOTION_BUDGET_DB_ID;
 
 app.use(bodyParser.json());
 
+// Inside your Express route:
 app.post("/webhook", async (req, res) => {
-  const body = req.body;
+  const message = req.body.message?.text;
+  const chatId = req.body.message?.chat.id;
 
-  const message = body.message?.text || "";
-  const chatId = body.message?.chat.id;
-  console.log(`Received message: ${message} from chatId: ${chatId}`);
-  // Parse the message (category, amount, store)
-  const parts = message.split(" ");
-  if (parts.length < 3) {
-    await sendMessage(
-      chatId,
-      "Format: category amount store\nExample: groceries 24.99 walmart"
-    );
-    return res.sendStatus(200);
-  }
-
-  const category = parts[0];
-  let amount = parts[1];
-  if (amount.startsWith("+")) {
-    amount = parseFloat(amount.slice(1));
-  } else {
-    amount = -Math.abs(parseFloat(amount));
-  }
-  amount = parseFloat(amount.toFixed(2));
-  const company = parts.slice(2).join(" ");
-  const today = new Date().toISOString();
-
-  async function sendMessage(chatId, text) {
+  async function sendTelegramMessage(chatId, text) {
     try {
       await axios.post(`${TELEGRAM_API}/sendMessage`, {
         chat_id: chatId,
@@ -51,39 +33,20 @@ app.post("/webhook", async (req, res) => {
     }
   }
 
-  // Push to Notion
-  try {
-    await notion.pages.create({
-      parent: { database_id: process.env.NOTION_BUDGET_DB_ID },
-      properties: {
-        Name: {
-          title: [{ text: { content: company } }],
-        },
-        Amount: {
-          number: amount,
-        },
-        Category: {
-          select: { name: category },
-        },
-        Company: {
-          rich_text: [{ text: { content: company } }],
-        },
-        Date: {
-          date: { start: today },
-        },
-      },
-    });
+  setContext(chatId, sendTelegramMessage);
 
-    await sendMessage(
-      chatId,
-      `Logged ${category} $${amount.toFixed(2)} at ${company}.`
-    );
-  } catch (error) {
-    console.error(error);
-    await sendMessage(chatId, `Error saving to Notion: ${error.message}`);
+  if (message) {
+    try {
+      await parseAndRoute(message, chatId, sendTelegramMessage);
+      res.send("Processed.");
+    } catch (err) {
+      console.error(err);
+      await sendTelegramMessage(chatId, "Error: " + err.message);
+      res.status(500).send("Error");
+    }
+  } else {
+    res.status(200).send("No text.");
   }
-
-  res.sendStatus(200);
 });
 
 app.listen(PORT, () => {
