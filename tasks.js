@@ -2,8 +2,6 @@ import { getContext } from "./context.js";
 import { notion } from "./index.js";
 // import { capitalizeFirst } from "./utils.js";
 
-const taskDbId = process.env.NOTION_TASK_DB_ID;
-console.log("taskDbId", taskDbId); // Add this after the const
 export async function createTaskEntry(rawInput) {
   const { chatId, sendMessage } = getContext();
   console.log(`Creating task with input: ${rawInput}`);
@@ -20,7 +18,8 @@ Due = ${data.Date}
 Frequency = ${data.Frequency}
 Notes = ${data.Notes}`
     );
-    console.log("hdshisdhi", taskDbId);
+    const taskDbId = process.env.NOTION_TASK_DB_ID;
+    console.log("taskDbId", taskDbId); // Add this after the const
     await notion.pages.create({
       parent: { database_id: taskDbId },
       properties: {
@@ -31,7 +30,7 @@ Notes = ${data.Notes}`
           select: { name: "To Do" },
         },
         Type: {
-          select: [{ name: data.Tag }],
+          select: { name: data.Tag },
         },
         Due: {
           date: { start: data.Date },
