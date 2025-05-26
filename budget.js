@@ -1,7 +1,9 @@
 import { getContext } from "./context.js";
 import { notion } from "./index.js";
-import { databaseId } from "./index.js";
+// import { databaseId } from "./index.js";
 import { capitalizeFirst } from "./utils.js";
+
+const databaseId = process.env.NOTION_BUDGET_DB_ID;
 
 export async function createBudgetEntry(rawInput) {
   const { chatId, sendMessage } = getContext();

@@ -13,7 +13,6 @@ const PORT = process.env.PORT || 3000;
 
 export const notion = new Client({ auth: process.env.NOTION_TOKEN });
 export const TELEGRAM_API = `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}`;
-export const databaseId = process.env.NOTION_BUDGET_DB_ID;
 
 app.use(bodyParser.json());
 
@@ -21,6 +20,9 @@ app.use(bodyParser.json());
 app.post("/webhook", async (req, res) => {
   const message = req.body.message?.text;
   const chatId = req.body.message?.chat.id;
+  if (!message || !chatId) {
+    return res.status(200).send("Invalid request: No message or chat ID.");
+  }
 
   async function sendTelegramMessage(chatId, text) {
     try {
@@ -35,18 +37,16 @@ app.post("/webhook", async (req, res) => {
 
   setContext(chatId, sendTelegramMessage);
 
-  if (message) {
-    try {
-      await parseAndRoute(message, chatId, sendTelegramMessage);
-      res.send("Processed.");
-    } catch (err) {
-      console.error(err);
-      await sendTelegramMessage(chatId, "Error: " + err.message);
-      res.status(500).send("Error");
-    }
-  } else {
-    res.status(200).send("No text.");
+  try {
+    await parseAndRoute(message, chatId, sendTelegramMessage);
+    res.send("Processed.");
+    return;
+  } catch (err) {
+    console.error(err);
+    await sendTelegramMessage(chatId, "Error: " + err.message);
   }
+
+  res.sendStatus(200); // Always respond to prevent Telegram retrying
 });
 
 app.listen(PORT, () => {
