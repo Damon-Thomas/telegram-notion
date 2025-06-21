@@ -1,13 +1,24 @@
 import dotenv from "dotenv";
-import express, { Request, Response } from "express";
+import express from "express";
 import bodyParser from "body-parser";
-import axios from "axios";
 import { Client } from "@notionhq/client";
 import { parseAndRoute } from "./parseAndRoute";
 import { setContext } from "./context";
 import { sendTelegramMessage } from "./utils/telegramMessage";
+import { Request, Response } from "express";
 
 dotenv.config();
+
+interface MessageRequest extends Request {
+  body: {
+    message?: {
+      text?: string;
+      chat?: {
+        id?: number;
+      };
+    };
+  };
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,11 +27,12 @@ export const notion = new Client({ auth: process.env.NOTION_TOKEN });
 
 app.use(bodyParser.json());
 
-app.post("/webhook", async (req: Request, res: Response) => {
+app.post("/webhook", async (req: MessageRequest, res: Response) => {
   const message: string | undefined = req.body.message?.text;
   const chatId: number | undefined = req.body.message?.chat?.id;
   if (!message || !chatId) {
-    return res.status(200).send("Invalid request: No message or chat ID.");
+    res.status(200).send("Invalid request: No message or chat ID.");
+    return;
   }
 
   setContext(chatId, sendTelegramMessage);
@@ -35,6 +47,7 @@ app.post("/webhook", async (req: Request, res: Response) => {
   }
 
   res.sendStatus(200); // Always respond to prevent Telegram retrying
+  return;
 });
 
 app.listen(PORT, () => {
