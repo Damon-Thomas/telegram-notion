@@ -1,11 +1,12 @@
-import { getContext } from "./context.js";
-import { notion } from "./index.js";
-import { capitalizeFirst } from "./utils.js";
+import { getChatId } from "./context/context.ts";
+import { notion } from "./index.ts";
+import { capitalizeFirst } from "./utils/capitalizeFirst.ts";
+import { sendTelegramMessage } from "./utils/telegramMessage.ts";
 
 export async function createBudgetEntry(rawInput) {
-  const databaseId = process.env.NOTION_BUDGET_DB_ID;
+  const databaseId = process.env.NOTION_BUDGET_DB_ID || "";
 
-  const { chatId, sendMessage } = getContext();
+  const { chatId } = getChatId();
   console.log(`Creating budget entry with input: ${rawInput}`);
   let data;
   try {
@@ -36,14 +37,17 @@ export async function createBudgetEntry(rawInput) {
     });
   } catch (error) {
     console.error(`Error creating budget entry: ${error.message}`);
-    await sendMessage(chatId, `Error creating budget entry: ${error.message}`);
+    await sendTelegramMessage(
+      chatId,
+      `Error creating budget entry: ${error.message}`
+    );
     return {
       success: false,
       message: `Error creating budget entry: ${error.message}`,
     };
   }
   if (data) {
-    await sendMessage(
+    await sendTelegramMessage(
       chatId,
       `Budget entry created successfully!
 ------------------------------------------------------
@@ -58,7 +62,10 @@ Notes: ${data.Notes}`
       message: "Budget entry created successfully!",
     };
   } else {
-    await sendMessage(chatId, "Error: No data returned from parseBudgetInput.");
+    await sendTelegramMessage(
+      chatId,
+      "Error: No data returned from parseBudgetInput."
+    );
     return {
       success: false,
       message: "Error: No data returned from parseBudgetInput.",
@@ -67,9 +74,9 @@ Notes: ${data.Notes}`
 }
 
 export async function parseBudgetInput(parts) {
-  const { chatId, sendMessage } = getContext();
+  const { chatId } = getChatId();
   if (parts.length < 3) {
-    await sendMessage(
+    await sendTelegramMessage(
       chatId,
       "Format: amount category company\nExample: 24.99 groceries walmart"
     );

@@ -3,9 +3,9 @@ import express from "express";
 import bodyParser from "body-parser";
 import { Client } from "@notionhq/client";
 import { parseAndRoute } from "./parseAndRoute";
-import { setContext } from "./context";
 import { sendTelegramMessage } from "./utils/telegramMessage";
 import { Request, Response } from "express";
+import { setChatId } from "./context/context";
 
 dotenv.config();
 
@@ -35,7 +35,7 @@ app.post("/webhook", async (req: MessageRequest, res: Response) => {
     return;
   }
 
-  setContext(chatId, sendTelegramMessage);
+  setChatId(chatId);
 
   try {
     await parseAndRoute(message);
