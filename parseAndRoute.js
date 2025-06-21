@@ -2,6 +2,7 @@ import { createBudgetEntry } from "./budget.js";
 import { createTaskEntry } from "./tasks.js";
 import { createMealEntry } from "./meals.js";
 import { sendHelpMessage } from "./help.js";
+import { sendTelegramMessage } from "./utils/telegramMessage.js";
 
 export async function parseAndRoute(messageText) {
   console.log(`Parsing and routing message: ${messageText}`);
@@ -22,11 +23,14 @@ export async function parseAndRoute(messageText) {
       case "help":
         return await sendHelpMessage();
       default:
-        await sendMessage(chatId, "Unknown command. Type `help` for guidance.");
+        await sendTelegramMessage(
+          chatId,
+          "Unknown command. Type `help` for guidance."
+        );
     }
   } catch (error) {
     console.error("Error in handleMessage:", error);
-    await sendMessage(
+    await sendTelegramMessage(
       chatId,
       "Oops! Something went wrong. Double-check your format or type `help`."
     );
