@@ -1,24 +1,12 @@
 import dotenv from "dotenv";
-import express from "express";
+import express, { Request, Response } from "express"; // Add Request/Response import
 import bodyParser from "body-parser";
 import { Client } from "@notionhq/client";
-import { parseAndRoute } from "./parseAndRoute";
-import { sendTelegramMessage } from "@utils/telegramMessage";
-import { Request, Response } from "express";
-import { setChatId } from "@/context/context";
+import { parseAndRoute } from "./parseAndRoute.js";
+import { sendTelegramMessage } from "./utils/telegramMessage.js";
+import { setChatId } from "./context/context.js";
 
 dotenv.config();
-
-interface MessageRequest extends Request {
-  body: {
-    message?: {
-      text?: string;
-      chat?: {
-        id?: number;
-      };
-    };
-  };
-}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -27,7 +15,7 @@ export const notion = new Client({ auth: process.env.NOTION_TOKEN });
 
 app.use(bodyParser.json());
 
-app.post("/webhook", async (req: MessageRequest, res: Response) => {
+app.post("/webhook", async (req: Request, res: Response) => {
   const message: string | undefined = req.body.message?.text;
   const chatId: number | undefined = req.body.message?.chat?.id;
   if (!message || !chatId) {

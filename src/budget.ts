@@ -1,6 +1,6 @@
-import { notion } from "./index";
-import { capitalizeFirst } from "@/utils/capitalizeFirst";
-import { sendTelegramMessage } from "@/utils/telegramMessage";
+import { notion } from "./index.js"; // local relative, keep .js
+import { capitalizeFirst } from "./utils/capitalizeFirst.js"; // remove .js from alias
+import { sendTelegramMessage } from "./utils/telegramMessage.js"; // remove .js
 
 export async function createBudgetEntry(rawInput: string[]) {
   const databaseId = process.env.NOTION_BUDGET_DB_ID || "";

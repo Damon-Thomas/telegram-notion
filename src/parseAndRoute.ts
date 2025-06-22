@@ -1,8 +1,8 @@
-import { createBudgetEntry } from "./budget";
-import { createTaskEntry } from "./tasks";
-import { createMealEntry } from "./meals";
-import { sendHelpMessage } from "./help";
-import { sendTelegramMessage } from "@utils/telegramMessage";
+import { createBudgetEntry } from "./budget.js"; // keep .js for local relative
+import { createTaskEntry } from "./tasks.js";
+import { createMealEntry } from "./meals.js";
+import { sendHelpMessage } from "./help.js";
+import { sendTelegramMessage } from "./utils/telegramMessage.js"; // remove .js
 
 export async function parseAndRoute(messageText: string) {
   console.log(`Parsing and routing message: ${messageText}`);

@@ -11,15 +11,9 @@
     "removeComments": true,
     "preserveConstEnums": true,
     "sourceMap": true,
-    "outDir": "./dist",
+    "outDir": "./dist/src",
     "baseUrl": "./",
-    "rootDir": "./src",
-    "paths": {
-      "@/*": ["src/*"],
-      "@utils/*": ["src/utils/*"],
-      "@context/*": ["src/context/*"],
-      "@definitions/*": ["src/definitions/*"]
-    }
+    "rootDir": "./src"
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "**/*.spec.ts"]

@@ -1,6 +1,6 @@
-import { notion } from "@/index";
-import { sendTelegramMessage } from "@utils/telegramMessage";
-import { parseTaskInput } from "@utils/textParser";
+import { notion } from "./index.js";
+import { sendTelegramMessage } from "./utils/telegramMessage.js";
+import { parseTaskInput } from "./utils/textParser.js";
 
 export async function createTaskEntry(rawInput: string[]) {
   console.log(`Creating task with input: ${rawInput}`);

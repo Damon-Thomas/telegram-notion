@@ -1,4 +1,4 @@
-import { ParsedTaskInput } from "@/definitions/types";
+import { ParsedTaskInput } from "../definitions/types.js";
 
 export function parseDateShortcut(input: string): string {
   const today = new Date();
