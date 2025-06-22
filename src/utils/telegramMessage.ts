@@ -1,5 +1,8 @@
 import axios from "axios";
 import { getChatId } from "../context/context.js";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 export const TELEGRAM_API = `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}`;
 
@@ -12,7 +15,10 @@ export const sendTelegramMessage: SendTelegramMessage = async (text) => {
     return;
   }
   try {
-    await axios.post(`${TELEGRAM_API}/sendMessage`, {
+    console.log(`Sending message to chat ID ${chatId}: ${text}`);
+    const fetchUrl = `${TELEGRAM_API}/sendMessage`;
+    console.log(`Fetch URL: ${fetchUrl}`);
+    await axios.post(fetchUrl, {
       chat_id: chatId,
       text: text,
     });

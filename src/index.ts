@@ -22,7 +22,7 @@ app.post("/webhook", async (req: Request, res: Response) => {
     res.status(200).send("Invalid request: No message or chat ID.");
     return;
   }
-
+  console.log(`Received message: ${message} from chat ID: ${chatId}`);
   setChatId(chatId);
 
   try {

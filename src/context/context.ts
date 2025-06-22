@@ -5,5 +5,5 @@ export function setChatId(newChatId: number | null) {
 }
 
 export function getChatId() {
-  return { chatId };
+  return chatId;
 }
