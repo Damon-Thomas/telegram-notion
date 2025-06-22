@@ -1,9 +1,5 @@
 import axios from "axios";
-import dotenv from "dotenv";
-import { get } from "http";
-import { getChatId } from "../context/context";
-
-dotenv.config();
+import { getChatId } from "@context/context";
 
 export const TELEGRAM_API = `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}`;
 

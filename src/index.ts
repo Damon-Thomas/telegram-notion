@@ -3,9 +3,9 @@ import express from "express";
 import bodyParser from "body-parser";
 import { Client } from "@notionhq/client";
 import { parseAndRoute } from "./parseAndRoute";
-import { sendTelegramMessage } from "./utils/telegramMessage";
+import { sendTelegramMessage } from "@utils/telegramMessage";
 import { Request, Response } from "express";
-import { setChatId } from "./context/context";
+import { setChatId } from "@/context/context";
 
 dotenv.config();
 

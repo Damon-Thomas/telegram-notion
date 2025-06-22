@@ -1,16 +1,23 @@
-import { getChatId } from "./context/context.ts";
-import { notion } from "./index.ts";
-import { capitalizeFirst } from "./utils/capitalizeFirst.ts";
-import { sendTelegramMessage } from "./utils/telegramMessage.ts";
+import { notion } from "./index";
+import { capitalizeFirst } from "@/utils/capitalizeFirst";
+import { sendTelegramMessage } from "@/utils/telegramMessage";
 
-export async function createBudgetEntry(rawInput) {
+export async function createBudgetEntry(rawInput: string[]) {
   const databaseId = process.env.NOTION_BUDGET_DB_ID || "";
 
-  const { chatId } = getChatId();
   console.log(`Creating budget entry with input: ${rawInput}`);
   let data;
   try {
     data = await parseBudgetInput(rawInput);
+    if (!data) {
+      sendTelegramMessage(
+        "Error: No data returned from parseBudgetInput. Please check your input format."
+      );
+      return {
+        success: false,
+        message: "Error: No data returned from parseBudgetInput.",
+      };
+    }
     console.log(
       `Parsed data: Name = ${data.Name}, Amount = ${data.Amount}, Category = ${data.Category}, Type = ${data.Type}, Notes = ${data.Notes}`
     );
@@ -36,8 +43,21 @@ export async function createBudgetEntry(rawInput) {
       },
     });
   } catch (error) {
-    console.error(`Error creating budget entry: ${error.message}`);
-    await sendTelegramMessage(`Error creating budget entry: ${error.message}`);
+    if (error instanceof Error) {
+      console.error(`Error creating budget entry: ${error.message}`);
+      await sendTelegramMessage(
+        `Error creating budget entry: ${error.message}`
+      );
+    } else {
+      console.error("Unknown error creating budget entry:", error);
+      await sendTelegramMessage(
+        `Error creating budget entry due to an unknown error. Please check the logs.`
+      );
+      return {
+        success: false,
+        message: "Error creating budget entry due to an unknown error.",
+      };
+    }
     return {
       success: false,
       message: `Error creating budget entry: ${error.message}`,
@@ -66,19 +86,19 @@ Notes: ${data.Notes}`
   }
 }
 
-export async function parseBudgetInput(parts) {
-  const { chatId } = getChatId();
+export async function parseBudgetInput(parts: string[]) {
   if (parts.length < 3) {
     await sendTelegramMessage(
       "Format: amount category company\nExample: 24.99 groceries walmart"
     );
     return;
   }
-  let amount = parts[0];
-  if (amount.startsWith("+")) {
-    amount = parseFloat(amount.slice(1));
+  let amountStr = parts[0];
+  let amount: number;
+  if (amountStr.startsWith("+")) {
+    amount = parseFloat(amountStr.slice(1));
   } else {
-    amount = -Math.abs(parseFloat(amount));
+    amount = -Math.abs(parseFloat(amountStr));
   }
   amount = Math.round(amount * 100) / 100; // Ensures two decimals, but as a number
   console.log(`Parsed amount: ${amount}`);

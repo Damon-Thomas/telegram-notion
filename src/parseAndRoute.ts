@@ -1,10 +1,10 @@
-import { createBudgetEntry } from "./budget.js";
-import { createTaskEntry } from "./tasks.js";
-import { createMealEntry } from "./meals.js";
-import { sendHelpMessage } from "./help.js";
-import { sendTelegramMessage } from "./utils/telegramMessage.js";
+import { createBudgetEntry } from "./budget";
+import { createTaskEntry } from "./tasks";
+import { createMealEntry } from "./meals";
+import { sendHelpMessage } from "./help";
+import { sendTelegramMessage } from "@utils/telegramMessage";
 
-export async function parseAndRoute(messageText) {
+export async function parseAndRoute(messageText: string) {
   console.log(`Parsing and routing message: ${messageText}`);
   try {
     const [flag, ...rest] = messageText
