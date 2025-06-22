@@ -43,7 +43,7 @@ app.post("/webhook", async (req: MessageRequest, res: Response) => {
     return;
   } catch (err: any) {
     console.error(err);
-    await sendTelegramMessage(chatId, "Error: " + err.message);
+    await sendTelegramMessage("Error: " + err.message);
   }
 
   res.sendStatus(200); // Always respond to prevent Telegram retrying

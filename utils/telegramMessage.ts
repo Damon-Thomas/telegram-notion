@@ -1,19 +1,16 @@
 import axios from "axios";
 import dotenv from "dotenv";
+import { get } from "http";
+import { getChatId } from "../context/context";
 
 dotenv.config();
 
 export const TELEGRAM_API = `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}`;
 
-type SendTelegramMessage = (
-  chatId: number | null,
-  text: string
-) => Promise<void>;
+type SendTelegramMessage = (text: string) => Promise<void>;
 
-export const sendTelegramMessage: SendTelegramMessage = async (
-  chatId,
-  text
-) => {
+export const sendTelegramMessage: SendTelegramMessage = async (text) => {
+  const chatId = getChatId();
   if (!chatId) {
     console.warn("sendTelegramMessage: No chat ID provided.");
     return;

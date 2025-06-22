@@ -37,10 +37,7 @@ export async function createBudgetEntry(rawInput) {
     });
   } catch (error) {
     console.error(`Error creating budget entry: ${error.message}`);
-    await sendTelegramMessage(
-      chatId,
-      `Error creating budget entry: ${error.message}`
-    );
+    await sendTelegramMessage(`Error creating budget entry: ${error.message}`);
     return {
       success: false,
       message: `Error creating budget entry: ${error.message}`,
@@ -48,7 +45,6 @@ export async function createBudgetEntry(rawInput) {
   }
   if (data) {
     await sendTelegramMessage(
-      chatId,
       `Budget entry created successfully!
 ------------------------------------------------------
 Name: ${data.Name}
@@ -62,10 +58,7 @@ Notes: ${data.Notes}`
       message: "Budget entry created successfully!",
     };
   } else {
-    await sendTelegramMessage(
-      chatId,
-      "Error: No data returned from parseBudgetInput."
-    );
+    await sendTelegramMessage("Error: No data returned from parseBudgetInput.");
     return {
       success: false,
       message: "Error: No data returned from parseBudgetInput.",
@@ -77,7 +70,6 @@ export async function parseBudgetInput(parts) {
   const { chatId } = getChatId();
   if (parts.length < 3) {
     await sendTelegramMessage(
-      chatId,
       "Format: amount category company\nExample: 24.99 groceries walmart"
     );
     return;

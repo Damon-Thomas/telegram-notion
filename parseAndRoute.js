@@ -23,15 +23,11 @@ export async function parseAndRoute(messageText) {
       case "help":
         return await sendHelpMessage();
       default:
-        await sendTelegramMessage(
-          chatId,
-          "Unknown command. Type `help` for guidance."
-        );
+        await sendTelegramMessage("Unknown command. Type `help` for guidance.");
     }
   } catch (error) {
     console.error("Error in handleMessage:", error);
     await sendTelegramMessage(
-      chatId,
       "Oops! Something went wrong. Double-check your format or type `help`."
     );
   }
