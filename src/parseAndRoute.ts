@@ -1,7 +1,7 @@
 import { createBudgetEntry } from "./budget.js"; // keep .js for local relative
 import { createTaskEntry } from "./tasks.js";
 import { createMealEntry } from "./meals.js";
-import { sendHelpMessage } from "./help.js";
+import { sendHelpMessage } from "./help/help.js";
 import { sendTelegramMessage } from "./utils/telegramMessage.js"; // remove .js
 
 export async function parseAndRoute(messageText: string) {
@@ -20,8 +20,9 @@ export async function parseAndRoute(messageText: string) {
       case "m":
         return await createMealEntry(rest);
       case "h":
+        return await sendHelpMessage(rest[0]?.toLowerCase());
       case "help":
-        return await sendHelpMessage();
+        return await sendHelpMessage(rest[0]?.toLowerCase());
       default:
         await sendTelegramMessage("Unknown command. Type `help` for guidance.");
     }
