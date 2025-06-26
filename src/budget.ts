@@ -11,13 +11,7 @@ export async function createBudgetEntry(rawInput: string[]) {
   try {
     data = await parseBudgetInput(rawInput);
     if (!data) {
-      sendTelegramMessage(
-        "Error: No data returned from parseBudgetInput. Please check your input format."
-      );
-      return {
-        success: false,
-        message: "Error: No data returned from parseBudgetInput.",
-      };
+      return;
     }
     console.log(
       `Parsed data: Name = ${data.Name}, Amount = ${data.Amount}, Category = ${data.Category}, Type = ${data.Type}, Notes = ${data.Notes}`
@@ -131,12 +125,12 @@ export async function parseBudgetInput(parts: string[]) {
     amount = -Math.abs(parseFloat(amountStr));
   }
   amount = Math.round(amount * 100) / 100; // Ensures two decimals, but as a number
-  console.log(`Parsed amount: ${amount}`);
+  console.log(`Parsed amount: ${parts}`);
+
   const category = capitalizeFirst(parts[1]);
   const name = capitalizeFirst(parts[2]);
-  // Support notes after a dash
-  const dashIndex = parts.indexOf("-");
-  const notes = dashIndex !== -1 ? parts.slice(dashIndex + 1).join(" ") : "";
+
+  const notes = parts.slice(3).join(" ").trim() || "";
   const type = amount < 0 ? "Expense" : "Income";
 
   return {
