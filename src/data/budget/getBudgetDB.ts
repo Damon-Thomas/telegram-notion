@@ -22,8 +22,10 @@ export default async function queryBudgetDatabase(date: string | null = null) {
     }
   }
   if (budgetEntries.length > 0) {
+    let otherTotal = 0;
     const total = budgetEntries.reduce((sum, entry) => {
       console.log(entry.Amount);
+      otherTotal += entry.Amount?.number ?? 0;
 
       return sum + (entry.Amount?.number ?? 0);
     }, 0);
