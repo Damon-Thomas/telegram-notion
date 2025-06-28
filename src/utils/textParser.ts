@@ -22,7 +22,7 @@ export function parseDateShortcut(input: string): string {
   return today.toISOString().split("T")[0];
 }
 
-function normalizeFrequency(input: string): string {
+export function normalizeFrequency(input: string): string {
   const lower = input.toLowerCase();
 
   const standard = [
