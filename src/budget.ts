@@ -1,11 +1,9 @@
 import queryBudgetDatabase from "./data/budget/getBudgetDB.js";
-import { notion } from "./app.js";
 import { capitalizeFirst } from "./utils/capitalizeFirst.js";
 import { sendTelegramMessage } from "./utils/telegramMessage.js";
+import createNotionPage from "./data/budget/createNotionPage.js";
 
 export async function createBudgetEntry(rawInput: string[]) {
-  const databaseId = process.env.NOTION_BUDGET_DB_ID || "";
-
   console.log(`Creating budget entry with input: ${rawInput}`);
   let data;
   try {
@@ -16,27 +14,20 @@ export async function createBudgetEntry(rawInput: string[]) {
     console.log(
       `Parsed data: Name = ${data.Name}, Amount = ${data.Amount}, Category = ${data.Category}, Type = ${data.Type}, Notes = ${data.Notes}`
     );
-    await notion.pages.create({
-      parent: { database_id: databaseId },
-      properties: {
-        Name: {
-          title: [{ text: { content: data.Name } }],
-        },
-        Date: {
-          date: { start: data.Date },
-        },
-        Amount: {
-          number: data.Amount,
-        },
-        Category: {
-          select: { name: data.Category },
-        },
-        Type: {
-          select: { name: data.Type },
-        },
-        Notes: { rich_text: [{ text: { content: data.Notes } }] },
-      },
-    });
+    const pageCreated = (await createNotionPage("budget", data)) || {
+      success: false,
+      message: "Failed to create Notion page",
+    };
+    if (!pageCreated.success && pageCreated.message) {
+      console.error(`Error creating budget entry: ${pageCreated.message}`);
+      await sendTelegramMessage(
+        `Error creating budget entry: ${pageCreated.message}`
+      );
+      return {
+        success: false,
+        message: pageCreated.message,
+      };
+    }
   } catch (error) {
     if (error instanceof Error) {
       console.error(`Error creating budget entry: ${error.message}`);
@@ -93,17 +84,11 @@ export async function parseBudgetInput(parts: string[]) {
       console.log(`View command detected: ${viewName}`);
       await sendTelegramMessage(`Viewing budget entries for: ${viewName}`);
       if (viewName === "day") {
-        queryBudgetDatabase();
-        console.log("Fetching today's budget entries...");
-        // Logic to fetch and display today's budget entries
+        queryBudgetDatabase(viewName);
       } else if (viewName === "week") {
-        queryBudgetDatabase();
-        console.log("Fetching this week's budget entries...");
-        // Logic to fetch and display this week's budget entries
+        queryBudgetDatabase(viewName);
       } else if (viewName === "month") {
-        queryBudgetDatabase();
-        console.log("Fetching this month's budget entries...");
-        // Logic to fetch and display this month's budget entries
+        queryBudgetDatabase(viewName);
       } else {
         await sendTelegramMessage(
           `Unknown view command: ${viewName}. Please use 'day', 'week', or 'month'.`
