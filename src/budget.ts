@@ -1,7 +1,7 @@
 import queryBudgetDatabase from "./data/budget/getBudgetDB.js";
-import { notion } from "./index.js"; // local relative, keep .js
-import { capitalizeFirst } from "./utils/capitalizeFirst.js"; // remove .js from alias
-import { sendTelegramMessage } from "./utils/telegramMessage.js"; // remove .js
+import { notion } from "./app.js";
+import { capitalizeFirst } from "./utils/capitalizeFirst.js";
+import { sendTelegramMessage } from "./utils/telegramMessage.js";
 
 export async function createBudgetEntry(rawInput: string[]) {
   const databaseId = process.env.NOTION_BUDGET_DB_ID || "";
@@ -82,64 +82,74 @@ Notes: ${data.Notes}`
 }
 
 export async function parseBudgetInput(parts: string[]) {
-  let head = parts[0].trim();
-  let alt;
-  console.log(`Parsing budget input: ${head}`);
-  if (head.startsWith("view")) {
-    // Handle view command
-    alt = "view";
-    const viewName = head.slice(4).trim();
-    console.log(`View command detected: ${viewName}`);
-    await sendTelegramMessage(`Viewing budget entries for: ${viewName}`);
-    if (viewName === "day") {
-      queryBudgetDatabase();
-      console.log("Fetching today's budget entries...");
-      // Logic to fetch and display today's budget entries
-    } else if (viewName === "week") {
-      queryBudgetDatabase();
-      console.log("Fetching this week's budget entries...");
-      // Logic to fetch and display this week's budget entries
-    } else if (viewName === "month") {
-      queryBudgetDatabase();
-      console.log("Fetching this month's budget entries...");
-      // Logic to fetch and display this month's budget entries
-    } else {
-      await sendTelegramMessage(
-        `Unknown view command: ${viewName}. Please use 'day', 'week', or 'month'.`
-      );
+  try {
+    let head = parts[0].trim();
+    let alt;
+    console.log(`Parsing budget input: ${head}`);
+    if (head.startsWith("view")) {
+      // Handle view command
+      alt = "view";
+      const viewName = head.slice(4).trim();
+      console.log(`View command detected: ${viewName}`);
+      await sendTelegramMessage(`Viewing budget entries for: ${viewName}`);
+      if (viewName === "day") {
+        queryBudgetDatabase();
+        console.log("Fetching today's budget entries...");
+        // Logic to fetch and display today's budget entries
+      } else if (viewName === "week") {
+        queryBudgetDatabase();
+        console.log("Fetching this week's budget entries...");
+        // Logic to fetch and display this week's budget entries
+      } else if (viewName === "month") {
+        queryBudgetDatabase();
+        console.log("Fetching this month's budget entries...");
+        // Logic to fetch and display this month's budget entries
+      } else {
+        await sendTelegramMessage(
+          `Unknown view command: ${viewName}. Please use 'day', 'week', or 'month'.`
+        );
+      }
+      return null;
     }
-    return;
-  }
-  if (parts.length < 3) {
+    if (parts.length < 3) {
+      await sendTelegramMessage(
+        "Format: amount category company\nExample: 24.99 groceries walmart"
+      );
+      return null;
+    }
+    alt = parts[0].startsWith("+") ? "income" : "expense";
+    let amountStr = head;
+    let amount: number;
+    if (amountStr.startsWith("+")) {
+      amount = parseFloat(amountStr.slice(1));
+    } else {
+      amount = -Math.abs(parseFloat(amountStr));
+    }
+    amount = Math.round(amount * 100) / 100; // Ensures two decimals, but as a number
+    console.log(`Parsed amount: ${parts}`);
+
+    const category = capitalizeFirst(parts[1]);
+    const name = capitalizeFirst(parts[2]);
+
+    const notes = parts.slice(3).join(" ").trim() || "";
+    const type = amount < 0 ? "Expense" : "Income";
+
+    return {
+      Alt: alt,
+      Amount: amount,
+      Category: category,
+      Name: name,
+      Type: type,
+      Notes: notes,
+      Date: new Date().toISOString(),
+    };
+  } catch (error) {
+    console.error(`Error parsing budget input: ${error}`);
     await sendTelegramMessage(
-      "Format: amount category company\nExample: 24.99 groceries walmart"
+      `Error parsing budget input: ${
+        error instanceof Error ? error.message : String(error)
+      }`
     );
-    return;
+    return null;
   }
-  alt = parts[0].startsWith("+") ? "income" : "expense";
-  let amountStr = head;
-  let amount: number;
-  if (amountStr.startsWith("+")) {
-    amount = parseFloat(amountStr.slice(1));
-  } else {
-    amount = -Math.abs(parseFloat(amountStr));
-  }
-  amount = Math.round(amount * 100) / 100; // Ensures two decimals, but as a number
-  console.log(`Parsed amount: ${parts}`);
-
-  const category = capitalizeFirst(parts[1]);
-  const name = capitalizeFirst(parts[2]);
-
-  const notes = parts.slice(3).join(" ").trim() || "";
-  const type = amount < 0 ? "Expense" : "Income";
-
-  return {
-    Alt: alt,
-    Amount: amount,
-    Category: category,
-    Name: name,
-    Type: type,
-    Notes: notes,
-    Date: new Date().toISOString(),
-  };
 }

@@ -1,4 +1,4 @@
-import { notion } from "./index.js";
+import { notion } from "./app.js";
 import { sendTelegramMessage } from "./utils/telegramMessage.js";
 import { parseTaskInput } from "./utils/textParser.js";
 

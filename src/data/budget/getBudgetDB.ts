@@ -1,5 +1,5 @@
 import { sendTelegramMessage } from "../../utils/telegramMessage.js";
-import { notion } from "../../index.js";
+import { notion } from "../../app.js";
 import getAfterDate from "../../utils/getAfterDate.js";
 
 // type BudgetResponse = { results: { properties: BudgetEntry }[] };

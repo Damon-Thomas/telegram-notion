@@ -1,18 +1,20 @@
+/** @type {import('ts-jest').JestConfigWithTsJest} */
 module.exports = {
   preset: "ts-jest",
-  testEnvironment: "node", // or 'jsdom' for browser environments
+  testEnvironment: "node",
+  resolver: "ts-jest-resolver",
   testMatch: [
-    "**/__tests__/**/*.+(ts|tsx|js)",
-    "**/?(*.)+(spec|test).+(ts|tsx|js)",
+    "<rootDir>/src/**/__tests__/**/*.+(ts|tsx)",
+    "<rootDir>/src/**/*.(spec|test).(ts|tsx)",
   ],
+
   transform: {
     "^.+\\.(ts|tsx)$": "ts-jest",
   },
-  // Optional: Configure ts-jest specific options
   globals: {
     "ts-jest": {
       tsconfig: "tsconfig.json",
-      diagnostics: true, // Set to false to suppress TypeScript diagnostic messages during tests
+      diagnostics: true,
     },
   },
 };

@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "npx tsc && node dist/src/index.js",
-    "test": "jest"
+    "test": "jest --detectOpenHandles"
   },
   "keywords": [],
   "author": "",
@@ -24,6 +24,7 @@
     "@types/node": "^24.0.3",
     "jest": "^30.0.3",
     "ts-jest": "^29.4.0",
+    "ts-jest-resolver": "^2.0.1",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.8.3"

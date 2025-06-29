@@ -62,7 +62,6 @@ describe("normalizeFrequency", () => {
 
     testCases.forEach(({ input, expected }) => {
       const result = normalizeFrequency(input);
-      console.log(`Input: ${input}, Normalized: ${result}`);
       expect(result).toBe(expected);
     });
   });
