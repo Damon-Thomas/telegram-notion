@@ -9,40 +9,38 @@ export async function createBudgetEntry(rawInput: string[]) {
   try {
     data = await parseBudgetInput(rawInput);
     if (!data) {
-      return;
+      return {
+        success: false,
+        message: "Failed to parse budget input. Please check the format.",
+      };
     }
     console.log(
       `Parsed data: Name = ${data.Name}, Amount = ${data.Amount}, Category = ${data.Category}, Type = ${data.Type}, Notes = ${data.Notes}`
     );
-    const pageCreated = (await createNotionPage("budget", data)) || {
-      success: false,
-      message: "Failed to create Notion page",
-    };
-    if (!pageCreated.success && pageCreated.message) {
-      console.error(`Error creating budget entry: ${pageCreated.message}`);
-      await sendTelegramMessage(
-        `Error creating budget entry: ${pageCreated.message}`
-      );
-      return {
-        success: false,
-        message: pageCreated.message,
-      };
-    }
+    await createNotionPage("budget", data);
   } catch (error) {
     if (error instanceof Error) {
       console.error(`Error creating budget entry: ${error.message}`);
-      await sendTelegramMessage(
-        `Error creating budget entry: ${error.message}`
-      );
+      try {
+        await sendTelegramMessage(
+          `Error creating budget entry: ${error.message}`
+        );
+      } catch (sendError) {
+        console.error(`Error sending Telegram message: ${sendError}`);
+      }
     } else {
-      console.error("Unknown error creating budget entry:", error);
-      await sendTelegramMessage(
-        `Error creating budget entry due to an unknown error. Please check the logs.`
-      );
-      return {
-        success: false,
-        message: "Error creating budget entry due to an unknown error.",
-      };
+      try {
+        await sendTelegramMessage(
+          `Error creating budget entry due to an unknown error. Please check the logs.`
+        );
+      } catch (sendError) {
+        console.error(`Error sending Telegram message: ${sendError}`);
+      } finally {
+        return {
+          success: false,
+          message: "Error creating budget entry due to an unknown error.",
+        };
+      }
     }
     return {
       success: false,
@@ -50,19 +48,29 @@ export async function createBudgetEntry(rawInput: string[]) {
     };
   }
   if (data) {
-    await sendTelegramMessage(
-      `Budget entry created successfully!
+    try {
+      await sendTelegramMessage(
+        `Budget entry created successfully!
 ------------------------------------------------------
 Name: ${data.Name}
 Amount: $${data.Amount.toFixed(2)}
 Category: ${data.Category}
 Type: ${data.Type}
 Notes: ${data.Notes}`
-    );
-    return {
-      success: true,
-      message: "Budget entry created successfully!",
-    };
+      );
+      return {
+        success: true,
+        message: "Budget entry created successfully!",
+      };
+    } catch (error) {
+      console.error(`Error sending Telegram message: ${error}`);
+      return {
+        success: false,
+        message: `Budget entry created, but failed to send Telegram message: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      };
+    }
   } else {
     await sendTelegramMessage("Error: No data returned from parseBudgetInput.");
     return {
