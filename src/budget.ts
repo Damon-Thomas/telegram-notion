@@ -4,51 +4,20 @@ import { sendTelegramMessage } from "./utils/telegramMessage.js";
 import createNotionPage from "./data/budget/createNotionPage.js";
 
 export async function createBudgetEntry(rawInput: string[]) {
-  console.log(`Creating budget entry with input: ${rawInput}`);
   let data;
   try {
     data = await parseBudgetInput(rawInput);
     if (!data) {
+      sendTelegramMessage(
+        "Failed to parse budget input. Please check the format."
+      );
       return {
         success: false,
         message: "Failed to parse budget input. Please check the format.",
       };
     }
-    console.log(
-      `Parsed data: Name = ${data.Name}, Amount = ${data.Amount}, Category = ${data.Category}, Type = ${data.Type}, Notes = ${data.Notes}`
-    );
     await createNotionPage("budget", data);
-  } catch (error) {
-    if (error instanceof Error) {
-      console.error(`Error creating budget entry: ${error.message}`);
-      try {
-        await sendTelegramMessage(
-          `Error creating budget entry: ${error.message}`
-        );
-      } catch (sendError) {
-        console.error(`Error sending Telegram message: ${sendError}`);
-      }
-    } else {
-      try {
-        await sendTelegramMessage(
-          `Error creating budget entry due to an unknown error. Please check the logs.`
-        );
-      } catch (sendError) {
-        console.error(`Error sending Telegram message: ${sendError}`);
-      } finally {
-        return {
-          success: false,
-          message: "Error creating budget entry due to an unknown error.",
-        };
-      }
-    }
-    return {
-      success: false,
-      message: `Error creating budget entry: ${error.message}`,
-    };
-  }
-  if (data) {
-    try {
+    if (data) {
       await sendTelegramMessage(
         `Budget entry created successfully!
 ------------------------------------------------------
@@ -62,20 +31,12 @@ Notes: ${data.Notes}`
         success: true,
         message: "Budget entry created successfully!",
       };
-    } catch (error) {
-      console.error(`Error sending Telegram message: ${error}`);
-      return {
-        success: false,
-        message: `Budget entry created, but failed to send Telegram message: ${
-          error instanceof Error ? error.message : String(error)
-        }`,
-      };
     }
-  } else {
-    await sendTelegramMessage("Error: No data returned from parseBudgetInput.");
+  } catch (error) {
+    console.error(`Error creating budget entry: ${error}`);
     return {
       success: false,
-      message: "Error: No data returned from parseBudgetInput.",
+      message: `Error creating budget entry`,
     };
   }
 }
@@ -89,7 +50,6 @@ export async function parseBudgetInput(parts: string[]) {
       // Handle view command
       alt = "view";
       const viewName = head.slice(4).trim();
-      console.log(`View command detected: ${viewName}`);
       await sendTelegramMessage(`Viewing budget entries for: ${viewName}`);
       if (viewName === "day") {
         queryBudgetDatabase(viewName);
@@ -119,7 +79,6 @@ export async function parseBudgetInput(parts: string[]) {
       amount = -Math.abs(parseFloat(amountStr));
     }
     amount = Math.round(amount * 100) / 100; // Ensures two decimals, but as a number
-    console.log(`Parsed amount: ${parts}`);
 
     const category = capitalizeFirst(parts[1]);
     const name = capitalizeFirst(parts[2]);

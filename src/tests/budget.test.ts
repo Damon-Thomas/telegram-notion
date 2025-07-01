@@ -115,7 +115,7 @@ describe("createBudgetEntry", () => {
     const result = await createBudgetEntry(input);
     expect(result).toEqual({
       success: false,
-      message: "Error creating budget entry: Telegram API error",
+      message: "Error creating budget entry",
     });
   });
 
@@ -127,17 +127,19 @@ describe("createBudgetEntry", () => {
     const result = await createBudgetEntry(input);
     expect(result).toEqual({
       success: false,
-      message: "Error creating budget entry: Notion API error",
+      message: "Error creating budget entry",
     });
   });
 
   test("should handle error when Notion page creation fails", async () => {
-    jest.spyOn(createNotionPage, "default").mockResolvedValue(undefined);
+    jest.spyOn(createNotionPage, "default").mockImplementation(() => {
+      throw new Error("Telegram API error");
+    });
     const input = ["100.00", "Groceries", "Food", "Weekly grocery shopping"];
     const result = await createBudgetEntry(input);
     expect(result).toEqual({
       success: false,
-      message: "Error creating budget entry: Telegram API error",
+      message: "Error creating budget entry",
     });
   });
 
@@ -149,7 +151,7 @@ describe("createBudgetEntry", () => {
     const result = await createBudgetEntry(input);
     expect(result).toEqual({
       success: false,
-      message: "Error creating budget entry: Unknown error",
+      message: "Error creating budget entry",
     });
   });
 
