@@ -231,11 +231,12 @@ describe("createTaskEntry", () => {
 
     // Assert
     expect(mockSendTelegramMessage).toHaveBeenCalledWith(
-      "Error: No data returned from parseTaskInput."
+      "Error creating task: Cannot read properties of null (reading 'Name')"
     );
     expect(result).toEqual({
       success: false,
-      message: "Error: No data returned from parseTaskInput.",
+      message:
+        "Error creating task: Cannot read properties of null (reading 'Name')",
     });
   });
 

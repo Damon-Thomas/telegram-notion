@@ -226,7 +226,7 @@ describe("parseAndRoute", () => {
       await parseAndRoute(message);
 
       // Assert
-      expect(mockSendHelpMessage).toHaveBeenCalledWith(undefined);
+      expect(mockSendHelpMessage).toHaveBeenCalledWith("");
     });
   });
 
@@ -361,7 +361,7 @@ describe("parseAndRoute", () => {
     test("should handle message with extra commas", async () => {
       // Arrange
       const message = "t,,,Task name,,,chore,,,";
-      const expectedParams = ["", "", "Task name", "", "chore", "", ""];
+      const expectedParams = ["", "", "Task name", "", "", "chore", "", "", ""];
       mockCreateTaskEntry.mockResolvedValue({
         success: true,
         message: "Success",
